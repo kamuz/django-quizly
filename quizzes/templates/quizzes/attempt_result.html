@@ -1,41 +1,85 @@
 {% extends "base.html" %}
-
 {% block title %}Result: {{ attempt.quiz.title }}{% endblock %}
-
 {% block content %}
-<h1>Result: {{ attempt.quiz.title }}</h1>
-
-<ul>
-    <li>Score: {{ attempt.score }}%</li>
-    <li>Correct: {{ attempt.correct_answers }} out of {{ attempt.total_questions }}</li>
-    <li>Incorrect: {{ attempt.wrong_answers }}</li>
-    <li>Points: {{ attempt.earned_points }} out of {{ attempt.total_points }}</li>
-    <li>Started: {{ attempt.started_at }}</li>
-    <li>Completed: {{ attempt.completed_at }}</li>
-</ul>
-
-<h2>Review</h2>
-{% for item in review %}
-    <div>
-        <h3>
-            {{ forloop.counter }}. {{ item.aq.question.text }}
-            — {% if item.aq.is_correct %}Correct{% else %}Incorrect{% endif %}
-            ({{ item.aq.earned_points }}/{{ item.aq.question.points }})
-        </h3>
-        <ul>
-            {% for row in item.answers %}
-                <li>
-                    {{ row.answer.text }}
-                    {% if row.selected %}[Your choice]{% endif %}
-                    {% if row.answer.is_correct %}[Correct answer]{% endif %}
-                </li>
+<div class="mx-auto max-w-4xl">
+    <a href="{% url 'quiz_detail' attempt.quiz.slug %}" class="text-sm font-medium text-zinc-500 hover:text-zinc-900">← {{ attempt.quiz.title }}</a>
+    <section class="mt-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+        <p class="text-sm font-medium text-zinc-500">Quiz complete</p>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight">Your result</h1>
+        <div class="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+            <div class="flex size-28 shrink-0 flex-col items-center justify-center rounded-full bg-zinc-100">
+                <span class="text-3xl font-semibold">{{ attempt.score|floatformat:0 }}%</span>
+                <span class="text-xs text-zinc-500">score</span>
+            </div>
+            <div class="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
+                <div class="rounded-xl bg-zinc-50 p-3">
+                    <p class="text-xl font-semibold">{{ attempt.correct_answers }}</p>
+                    <p class="text-xs text-zinc-500">Correct</p>
+                </div>
+                <div class="rounded-xl bg-zinc-50 p-3">
+                    <p class="text-xl font-semibold">{{ attempt.wrong_answers }}</p>
+                    <p class="text-xs text-zinc-500">Incorrect</p>
+                </div>
+                <div class="rounded-xl bg-zinc-50 p-3">
+                    <p class="text-xl font-semibold">{{ attempt.earned_points }}/{{ attempt.total_points }}</p>
+                    <p class="text-xs text-zinc-500">Points</p>
+                </div>
+                <div class="rounded-xl bg-zinc-50 p-3">
+                    <p class="text-xl font-semibold">{{ attempt.total_questions }}</p>
+                    <p class="text-xs text-zinc-500">Questions</p>
+                </div>
+            </div>
+        </div>
+        <p class="mt-5 text-xs text-zinc-400">Completed {{ attempt.completed_at|date:"M j, Y · H:i" }}</p>
+    </section>
+    <section class="mt-10">
+        <div class="mb-5">
+            <h2 class="text-xl font-semibold">Answer review</h2>
+            <p class="mt-1 text-sm text-zinc-500">See what you got right and which answers were correct.</p>
+        </div>
+        <div class="space-y-4">
+            {% for item in review %}
+                <article class="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6">
+                    <div class="flex items-start gap-3">
+                        <span class="flex size-8 shrink-0 items-center justify-center rounded-full {% if item.aq.is_correct %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %} text-sm font-semibold">
+                            {{ forloop.counter }}
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-wide {% if item.aq.is_correct %}text-emerald-700{% else %}text-rose-700{% endif %}">
+                                    {% if item.aq.is_correct %}Correct{% else %}Incorrect{% endif %}
+                                </span>
+                                <span class="text-xs text-zinc-500">{{ item.aq.earned_points }}/{{ item.aq.question.points }} points</span>
+                            </div>
+                            <h3 class="mt-2 font-medium leading-6">{{ item.aq.question.text }}</h3>
+                            <ul class="mt-4 space-y-2">
+                                {% for row in item.answers %}
+                                    <li class="flex items-start gap-2 rounded-lg px-3 py-2 text-sm {% if row.answer.is_correct %}bg-emerald-50 text-emerald-900{% elif row.selected %}bg-rose-50 text-rose-900{% else %}text-zinc-600{% endif %}">
+                                        <span class="mt-0.5">
+                                            {% if row.answer.is_correct %}✓{% elif row.selected %}×{% else %}·{% endif %}
+                                        </span>
+                                        <span>
+                                            {{ row.answer.text }}
+                                            {% if row.selected and not row.answer.is_correct %}
+                                                <span class="ml-1 text-xs">Your choice</span>
+                                            {% endif %}
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </article>
             {% endfor %}
-        </ul>
+        </div>
+    </section>
+    <div class="mt-8 flex flex-wrap gap-3">
+        <a class="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700" href="{% url 'quiz_detail' attempt.quiz.slug %}">
+            Back to quiz
+        </a>
+        <a class="rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium hover:bg-zinc-50" href="{% url 'quiz_list' %}">
+            Browse all quizzes
+        </a>
     </div>
-{% endfor %}
-
-<p>
-    <a href="{% url 'quiz_detail' attempt.quiz.slug %}">Back to Quiz</a> |
-    <a href="{% url 'quiz_list' %}">All Quizzes</a>
-</p>
+</div>
 {% endblock %}

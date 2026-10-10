@@ -1,40 +1,98 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Quizzes{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Quizzes{% endblock %} · Quizly</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .auth-form p {
+            margin-top: 1.25rem;
+        }
+
+        .auth-form label {
+            display: block;
+            margin-bottom: .4rem;
+            color: #3f3f46;
+            font-size: .875rem;
+            font-weight: 500;
+        }
+
+        .auth-form input {
+            width: 100%;
+            border: 1px solid #d4d4d8;
+            border-radius: .5rem;
+            padding: .65rem .8rem;
+            color: #18181b;
+            outline: none;
+        }
+
+        .auth-form input:focus {
+            border-color: #52525b;
+            box-shadow: 0 0 0 3px rgb(24 24 27 / 10%);
+        }
+
+        .auth-form .helptext,
+        .auth-form ul {
+            display: block;
+            margin-top: .4rem;
+            color: #71717a;
+            font-size: .75rem;
+        }
+
+        .auth-form ul {
+            padding-left: 1.2rem;
+            list-style: disc;
+        }
+
+        .auth-form .errorlist {
+            color: #b91c1c;
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="{% url 'quiz_list' %}">Quizzes</a>
-            {% if user.is_authenticated %}
-                | <a href="{% url 'my_attempts' %}">My Attempts</a>
-                {% if user.is_staff %}| <a href="{% url 'admin:index' %}">Admin</a>{% endif %}
-                | {{ user.get_username }}
-                <form method="post" action="{% url 'logout' %}" style="display:inline">
-                    {% csrf_token %}
-                    <button type="submit">Log out</button>
-                </form>
-            {% else %}
-                | <a href="{% url 'login' %}">Log in</a>
-                | <a href="{% url 'register' %}">Register</a>
-            {% endif %}
+<body class="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
+    <header class="border-b border-zinc-200 bg-white">
+        <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+            <a href="{% url 'quiz_list' %}" class="text-lg font-semibold tracking-tight">Quizly<span class="text-zinc-400">.</span></a>
+            <div class="flex items-center gap-1 sm:gap-2">
+                <a href="{% url 'quiz_list' %}" class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950">Quizzes</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'my_attempts' %}" class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950">My attempts</a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'admin:index' %}" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 sm:inline-block">Admin</a>
+                    {% endif %}
+                    <span class="hidden px-2 text-sm text-zinc-500 sm:inline">{{ user.get_username }}</span>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-medium hover:bg-zinc-50">
+                            Log out
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100">Log in</a>
+                    <a href="{% url 'register' %}" class="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700">Sign up</a>
+                {% endif %}
+            </div>
         </nav>
-        <hr>
     </header>
 
     {% if messages %}
-        <ul>
+        <div class="mx-auto max-w-6xl space-y-2 px-4 pt-5 sm:px-6" role="status">
             {% for message in messages %}
-                <li>{{ message }}</li>
+                <div class="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700">{{ message }}</div>
             {% endfor %}
-        </ul>
+        </div>
     {% endif %}
 
-    <main>
+    <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         {% block content %}{% endblock %}
     </main>
+    <footer class="mt-10 border-t border-zinc-200 bg-white">
+        <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-zinc-500 sm:px-6">A little practice goes a long way.</div>
+    </footer>
 </body>
 </html>
