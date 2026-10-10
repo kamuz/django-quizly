@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Quizzes{% endblock %}
+
+{% block content %}
+<h1>Quizzes{% if current_category %}: {{ current_category.name }}{% endif %}</h1>
+
+<h2>Categories</h2>
+<ul>
+    <li><a href="{% url 'quiz_list' %}">All</a></li>
+    {% for category in categories %}
+        <li><a href="{% url 'quiz_list' %}?category={{ category.slug }}">{{ category.name }}</a></li>
+    {% endfor %}
+</ul>
+
+<h2>List</h2>
+{% if quizzes %}
+    <ul>
+        {% for quiz in quizzes %}
+            <li>
+                <a href="{% url 'quiz_detail' quiz.slug %}">{{ quiz.title }}</a>
+                ({{ quiz.category.name }}, author: {{ quiz.author }})
+                {% if quiz.time_limit %}, limit: {{ quiz.time_limit }} min{% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No quizzes available yet.</p>
+{% endif %}
+{% endblock %}

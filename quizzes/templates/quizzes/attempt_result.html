@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Result: {{ attempt.quiz.title }}{% endblock %}
+
+{% block content %}
+<h1>Result: {{ attempt.quiz.title }}</h1>
+
+<ul>
+    <li>Score: {{ attempt.score }}%</li>
+    <li>Correct: {{ attempt.correct_answers }} out of {{ attempt.total_questions }}</li>
+    <li>Incorrect: {{ attempt.wrong_answers }}</li>
+    <li>Points: {{ attempt.earned_points }} out of {{ attempt.total_points }}</li>
+    <li>Started: {{ attempt.started_at }}</li>
+    <li>Completed: {{ attempt.completed_at }}</li>
+</ul>
+
+<h2>Review</h2>
+{% for item in review %}
+    <div>
+        <h3>
+            {{ forloop.counter }}. {{ item.aq.question.text }}
+            — {% if item.aq.is_correct %}Correct{% else %}Incorrect{% endif %}
+            ({{ item.aq.earned_points }}/{{ item.aq.question.points }})
+        </h3>
+        <ul>
+            {% for row in item.answers %}
+                <li>
+                    {{ row.answer.text }}
+                    {% if row.selected %}[Your choice]{% endif %}
+                    {% if row.answer.is_correct %}[Correct answer]{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endfor %}
+
+<p>
+    <a href="{% url 'quiz_detail' attempt.quiz.slug %}">Back to Quiz</a> |
+    <a href="{% url 'quiz_list' %}">All Quizzes</a>
+</p>
+{% endblock %}

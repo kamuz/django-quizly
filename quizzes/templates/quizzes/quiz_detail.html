@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ quiz.title }}</h1>
+
+<p>Category: <a href="{% url 'quiz_list' %}?category={{ quiz.category.slug }}">{{ quiz.category.name }}</a></p>
+<p>Author: {{ quiz.author }}</p>
+<p>Questions: {{ questions_count }}</p>
+<p>Time limit: {% if quiz.time_limit %}{{ quiz.time_limit }} min{% else %}none{% endif %}</p>
+
+{% if quiz.description %}
+    <p>{{ quiz.description|linebreaksbr }}</p>
+{% endif %}
+
+{% if user.is_authenticated %}
+    {% if in_progress %}
+        <p><a href="{% url 'attempt_take' in_progress.pk %}">Continue attempt</a></p>
+    {% endif %}
+    <form method="post" action="{% url 'quiz_start' quiz.slug %}">
+        {% csrf_token %}
+        <button type="submit">{% if in_progress %}Continue{% else %}Start{% endif %}</button>
+    </form>
+
+    <h2>My Attempts</h2>
+    {% if attempts %}
+        <table border="1" cellpadding="4">
+            <tr>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Result</th>
+                <th></th>
+            </tr>
+            {% for attempt in attempts %}
+                <tr>
+                    <td>{{ attempt.started_at }}</td>
+                    <td>{{ attempt.get_status_display }}</td>
+                    <td>{% if attempt.status == "completed" %}{{ attempt.score }}%{% else %}—{% endif %}</td>
+                    <td>
+                        {% if attempt.status == "completed" %}
+                            <a href="{% url 'attempt_result' attempt.pk %}">View</a>
+                        {% elif attempt.status == "in_progress" %}
+                            <a href="{% url 'attempt_take' attempt.pk %}">Continue</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No attempts yet.</p>
+    {% endif %}
+{% else %}
+    <p><a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to take the quiz.</p>
+{% endif %}
+{% endblock %}

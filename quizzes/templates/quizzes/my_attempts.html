@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}My Attempts{% endblock %}
+
+{% block content %}
+<h1>My Attempts</h1>
+
+{% if attempts %}
+    <table border="1" cellpadding="4">
+        <tr>
+            <th>Quiz</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Result</th>
+            <th></th>
+        </tr>
+        {% for attempt in attempts %}
+            <tr>
+                <td><a href="{% url 'quiz_detail' attempt.quiz.slug %}">{{ attempt.quiz.title }}</a></td>
+                <td>{{ attempt.started_at }}</td>
+                <td>{{ attempt.get_status_display }}</td>
+                <td>{% if attempt.status == "completed" %}{{ attempt.score }}%{% else %}—{% endif %}</td>
+                <td>
+                    {% if attempt.status == "completed" %}
+                        <a href="{% url 'attempt_result' attempt.pk %}">View</a>
+                    {% elif attempt.status == "in_progress" %}
+                        <a href="{% url 'attempt_take' attempt.pk %}">Continue</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No attempts yet.</p>
+{% endif %}
+{% endblock %}

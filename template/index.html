@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HawkLab — Practical quizzes for developers</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Phosphor icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+
+    @theme {
+      --font-poppins: 'Poppins', sans-serif;
+    }
+  </style>
+
+  <style>
+    html, body, button, input, select, textarea {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Notebook-style squared paper behind the hero */
+    .hero-grid::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background-image: linear-gradient(to right, rgb(0 0 0 / 9%) 1px, transparent 1px), linear-gradient(to bottom, rgb(0 0 0 / 9%) 1px, transparent 1px);
+      background-size: 28px 28px;
+      -webkit-mask-image: radial-gradient(ellipse at center, #000 35%, transparent 85%);
+      mask-image: radial-gradient(ellipse at center, #000 35%, transparent 85%);
+    }
+
+    .dark .hero-grid::before {
+      background-image: linear-gradient(to right, rgb(255 255 255 / 9%) 1px, transparent 1px), linear-gradient(to bottom, rgb(255 255 255 / 9%) 1px, transparent 1px);
+    }
+
+    .section-link {
+      transition: gap 150ms ease, color 150ms ease;
+    }
+
+    .section-link:hover {
+      gap: 0.6rem;
+    }
+
+    dialog::backdrop {
+      background: rgb(0 0 0 / 45%);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+
+  <!-- Apply saved theme before the page renders -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+</head>
+
+<body class="min-h-screen bg-white text-zinc-950 antialiased dark:bg-zinc-950 dark:text-zinc-50">
+
+  <!-- ===== Header ===== -->
+  <header class="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/85 backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-950/85">
+    <div class="mx-auto flex h-16 items-center gap-6 px-8">
+
+      <a href="#" class="flex shrink-0 items-center gap-2 text-lg font-semibold">
+        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/>
+          <circle cx="12" cy="12" r="3.2"/>
+          <circle cx="12" cy="12" r="0.9" fill="currentColor"/>
+          <path d="M12 1.5v2M12 20.5v2M1.5 12H0M24 12h-1.5"/>
+        </svg>
+        HawkLab
+      </a>
+
+      <nav class="hidden items-center gap-1 md:flex">
+        <a href="#courses" class="rounded-md px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50">Courses</a>
+        <a href="#quizzes" class="rounded-md px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50">Quizzes</a>
+      </nav>
+
+      <div class="ml-auto flex items-center gap-2">
+
+        <button type="button" id="search-toggle" class="hidden items-center gap-2 rounded-md px-3 py-2 bg-zinc-100 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-950 sm:inline-flex dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50" aria-label="Search">
+          <i class="ph ph-magnifying-glass text-base"></i>
+          Search
+        </button>
+
+        <button type="button" id="theme-toggle" class="inline-flex size-9 items-center justify-center rounded-md text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50" aria-label="Toggle theme">
+          <i id="theme-icon" class="ph ph-moon text-lg"></i>
+        </button>
+
+        <a href="#" class="hidden items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-800 shadow-sm transition-colors hover:border-zinc-400 hover:bg-zinc-100 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800">
+          <i class="ph ph-sign-in text-base"></i>
+          Log in
+        </a>
+
+        <a href="#" class="inline-flex items-center gap-1.5 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+          <i class="ph ph-user-plus text-base"></i>
+          Sign up
+        </a>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Search dialog ===== -->
+  <dialog id="search-dialog" class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-xl border border-zinc-200 bg-white p-0 text-zinc-950 shadow-2xl outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50">
+    <form method="dialog" class="p-4">
+      <div class="flex items-center gap-2">
+        <i class="ph ph-magnifying-glass text-lg text-zinc-400"></i>
+
+        <input id="search-input" type="search" class="h-10 min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-500 dark:focus:ring-zinc-800" placeholder="Search courses and quizzes..." autocomplete="off">
+
+        <button type="submit" class="rounded-md px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50">Esc</button>
+      </div>
+
+      <p class="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+        Search for courses, quizzes, HTML, Django, ESP32, MQTT, ROS and more.
+      </p>
+    </form>
+  </dialog>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero-grid relative isolate flex w-full flex-col items-center gap-6 overflow-hidden border-b border-zinc-200 px-4 py-20 text-center sm:py-28 dark:border-zinc-800">
+    <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+      <i class="ph ph-sparkle text-base"></i>
+      New courses every week
+    </span>
+
+    <h1 class="max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
+      Practical quizzes for web, IoT and robotics developers
+    </h1>
+
+    <p class="max-w-xl text-zinc-500 dark:text-zinc-400">
+      Learn by doing: short courses and quick quizzes on HTML, Django, ESP32, MQTT, ROS and more.
+    </p>
+
+    <div class="flex flex-wrap items-center justify-center gap-2">
+      <a href="#courses" class="inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+        Browse courses
+      </a>
+
+      <a href="#quizzes" class="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800">
+        Try a quick quiz
+      </a>
+    </div>
+  </section>
+
+  <main class="mx-auto w-full max-w-6xl space-y-20 px-4 py-12">
+
+    <!-- ===== Courses ===== -->
+    <section id="courses" class="space-y-6">
+
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-2xl font-semibold tracking-tight">Courses</h2>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">Practical lessons built around real developer skills</p>
+        </div>
+
+        <a href="#" class="section-link inline-flex w-fit items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">
+          All courses
+          <i class="ph ph-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+
+        <!-- Course 1 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-globe text-base"></i>
+                Web
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Beginner</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">HTML Essentials</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Build a solid foundation in semantic HTML and modern page structure.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-book-open text-sm"></i> 12 lessons</span>
+            <span class="flex items-center gap-1"><i class="ph ph-clock text-sm"></i> 2.5 hours</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">Start course</a>
+          </footer>
+        </article>
+
+        <!-- Course 2 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-code text-base"></i>
+                Backend
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Intermediate</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">Django Fundamentals</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Learn models, views, URLs, forms and the fundamentals of Django applications.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-book-open text-sm"></i> 16 lessons</span>
+            <span class="flex items-center gap-1"><i class="ph ph-clock text-sm"></i> 4 hours</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">Start course</a>
+          </footer>
+        </article>
+
+        <!-- Course 3 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-cpu text-base"></i>
+                IoT
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Beginner</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">ESP32 Essentials</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Get started with GPIO, sensors, Wi-Fi and practical ESP32 projects.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-book-open text-sm"></i> 14 lessons</span>
+            <span class="flex items-center gap-1"><i class="ph ph-clock text-sm"></i> 3 hours</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">Start course</a>
+          </footer>
+        </article>
+
+        <!-- Course 4 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-broadcast text-base"></i>
+                IoT
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Intermediate</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">MQTT in Practice</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Understand publishers, subscribers, topics and reliable device messaging.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-book-open text-sm"></i> 10 lessons</span>
+            <span class="flex items-center gap-1"><i class="ph ph-clock text-sm"></i> 2 hours</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">Start course</a>
+          </footer>
+        </article>
+
+        <!-- Course 5 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-robot text-base"></i>
+                Robotics
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Intermediate</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">ROS Fundamentals</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Explore nodes, topics, messages and the core concepts behind ROS.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-book-open text-sm"></i> 15 lessons</span>
+            <span class="flex items-center gap-1"><i class="ph ph-clock text-sm"></i> 4 hours</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">Start course</a>
+          </footer>
+        </article>
+
+        <!-- Course 6 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-circuitry text-base"></i>
+                Robotics
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Advanced</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">Robotics Control Basics</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Learn the fundamentals of motors, servos, steppers and motion control.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-book-open text-sm"></i> 18 lessons</span>
+            <span class="flex items-center gap-1"><i class="ph ph-clock text-sm"></i> 5 hours</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">Start course</a>
+          </footer>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ===== Quick quizzes ===== -->
+    <section id="quizzes" class="space-y-6">
+
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-2xl font-semibold tracking-tight">Quick quizzes</h2>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">Five minutes, ten questions</p>
+        </div>
+
+        <a href="#" class="section-link inline-flex w-fit items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">
+          All quizzes
+          <i class="ph ph-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-3">
+
+        <!-- Quiz 1 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-globe text-base"></i>
+                Web
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Quick quiz</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">Spot the HTML Tag</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">10 rapid-fire questions on everyday HTML elements.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-list-checks text-sm"></i> 10 questions</span>
+            <span class="flex items-center gap-1"><i class="ph ph-timer text-sm"></i> 5 min</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+              <i class="ph ph-play text-base"></i>
+              Take quiz
+            </a>
+          </footer>
+        </article>
+
+        <!-- Quiz 2 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-cpu text-base"></i>
+                IoT
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Quick quiz</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">Sensor or Actuator?</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Sort real components into inputs and outputs.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-list-checks text-sm"></i> 10 questions</span>
+            <span class="flex items-center gap-1"><i class="ph ph-timer text-sm"></i> 5 min</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+              <i class="ph ph-play text-base"></i>
+              Take quiz
+            </a>
+          </footer>
+        </article>
+
+        <!-- Quiz 3 -->
+        <article class="flex flex-col gap-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <header>
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">
+                <i class="ph ph-robot text-base"></i>
+                Robotics
+              </span>
+              <span class="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Quick quiz</span>
+            </div>
+
+            <h3 class="mt-3 text-lg font-semibold">Motor, Servo or Stepper?</h3>
+            <p class="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">Match each drive type to the job it does best.</p>
+          </header>
+
+          <section class="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="flex items-center gap-1"><i class="ph ph-list-checks text-sm"></i> 10 questions</span>
+            <span class="flex items-center gap-1"><i class="ph ph-timer text-sm"></i> 6 min</span>
+          </section>
+
+          <footer class="mt-auto">
+            <a href="#" class="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+              <i class="ph ph-play text-base"></i>
+              Take quiz
+            </a>
+          </footer>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+
+    <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-5">
+
+      <div class="space-y-4 md:col-span-2">
+        <a href="#" class="text-lg font-semibold">HawkLab</a>
+
+        <p class="text-sm text-zinc-500 dark:text-zinc-400">
+          Short, practical courses and quizzes for developers.
+        </p>
+
+        <form onsubmit="return false" class="flex max-w-sm items-center gap-2">
+          <input type="email" class="h-10 min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-500 dark:focus:ring-zinc-800" placeholder="Your email" aria-label="Email">
+
+          <button type="submit" class="inline-flex shrink-0 items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+            Subscribe
+          </button>
+        </form>
+      </div>
+
+      <div class="space-y-2 text-sm">
+        <p class="font-semibold">Learn</p>
+        <a href="#courses" class="block text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">Courses</a>
+        <a href="#quizzes" class="block text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">Quizzes</a>
+      </div>
+
+      <div class="space-y-2 text-sm">
+        <p class="font-semibold">Get help</p>
+        <a href="#" class="block text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">FAQ</a>
+        <a href="#" class="block text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">Contact</a>
+        <a href="#" class="block text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">Community</a>
+      </div>
+
+      <div class="space-y-2 text-sm">
+        <p class="font-semibold">Legal</p>
+        <a href="#" class="block text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">Privacy</a>
+        <a href="#" class="block text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">Terms</a>
+      </div>
+
+    </div>
+
+    <div class="border-t border-zinc-200 dark:border-zinc-800">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 text-sm text-zinc-500 dark:text-zinc-400">
+        <p>© 2026 HawkLab</p>
+
+        <div class="flex gap-3">
+          <a href="#" class="transition-colors hover:text-zinc-950 dark:hover:text-zinc-50" aria-label="GitHub">
+            <i class="ph ph-github-logo text-base"></i>
+          </a>
+
+          <a href="#" class="transition-colors hover:text-zinc-950 dark:hover:text-zinc-50" aria-label="YouTube">
+            <i class="ph ph-youtube-logo text-base"></i>
+          </a>
+
+          <a href="#" class="transition-colors hover:text-zinc-950 dark:hover:text-zinc-50" aria-label="Email">
+            <i class="ph ph-envelope-simple text-base"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+
+  <script>
+    const themeIcon = document.getElementById('theme-icon');
+    const themeToggle = document.getElementById('theme-toggle');
+    const searchToggle = document.getElementById('search-toggle');
+    const searchDialog = document.getElementById('search-dialog');
+    const searchInput = document.getElementById('search-input');
+
+    function syncThemeIcon() {
+      const dark = document.documentElement.classList.contains('dark');
+      themeIcon.className = `ph ${dark ? 'ph-sun' : 'ph-moon'} text-lg`;
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+      syncThemeIcon();
+    });
+
+    searchToggle.addEventListener('click', () => {
+      searchDialog.showModal();
+      searchInput.focus();
+    });
+
+    document.addEventListener('keydown', event => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+
+        if (!searchDialog.open) {
+          searchDialog.showModal();
+          searchInput.focus();
+        }
+      }
+    });
+
+    searchDialog.addEventListener('click', event => {
+      if (event.target === searchDialog) searchDialog.close();
+    });
+
+    syncThemeIcon();
+  </script>
+
+</body>
+</html>
