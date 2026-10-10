@@ -1,0 +1,38 @@
+[
+    {
+        "model": "quizzes.attemptquestion",
+        "pk": 1,
+        "fields": {
+            "attempt": 1,
+            "question": 1,
+            "is_correct": true,
+            "earned_points": 1,
+            "created_at": "2026-10-05T11:11:00Z",
+            "updated_at": "2026-10-05T11:11:00Z"
+        }
+    },
+    {
+        "model": "quizzes.attemptquestion",
+        "pk": 2,
+        "fields": {
+            "attempt": 1,
+            "question": 2,
+            "is_correct": true,
+            "earned_points": 2,
+            "created_at": "2026-10-05T11:12:00Z",
+            "updated_at": "2026-10-05T11:12:00Z"
+        }
+    },
+    {
+        "model": "quizzes.attemptquestion",
+        "pk": 3,
+        "fields": {
+            "attempt": 2,
+            "question": 3,
+            "is_correct": false,
+            "earned_points": 0,
+            "created_at": "2026-10-05T11:21:00Z",
+            "updated_at": "2026-10-05T11:21:00Z"
+        }
+    }
+]

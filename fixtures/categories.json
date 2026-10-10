@@ -1,0 +1,35 @@
+[
+    {
+        "model": "quizzes.category",
+        "pk": 1,
+        "fields": {
+            "name": "Programming",
+            "slug": "programming",
+            "description": "Programming and software development quizzes.",
+            "created_at": "2026-10-05T10:00:00Z",
+            "updated_at": "2026-10-05T10:00:00Z"
+        }
+    },
+    {
+        "model": "quizzes.category",
+        "pk": 2,
+        "fields": {
+            "name": "Python",
+            "slug": "python",
+            "description": "Python programming quizzes.",
+            "created_at": "2026-10-05T10:05:00Z",
+            "updated_at": "2026-10-05T10:05:00Z"
+        }
+    },
+    {
+        "model": "quizzes.category",
+        "pk": 3,
+        "fields": {
+            "name": "Django",
+            "slug": "django",
+            "description": "Django framework quizzes.",
+            "created_at": "2026-10-05T10:10:00Z",
+            "updated_at": "2026-10-05T10:10:00Z"
+        }
+    }
+]
